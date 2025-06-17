@@ -1,4 +1,3 @@
-// src/admin/admin.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -10,7 +9,10 @@ export class Admin {
   username: string;
 
   @Prop({ required: true })
-  password: string; // bcrypt 해시로 저장
+  password: string;
+  
+  @Prop({ required: true })
+  name: string;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);
