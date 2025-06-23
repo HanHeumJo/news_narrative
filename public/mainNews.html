@@ -1,0 +1,151 @@
+<!-- 메인 홈 화면 -->
+<!-- 화면 구성 -->
+  <!-- 상단부 -->
+    <!--  
+        - 상단부는 로고, 검색창, 메뉴바 등으로 구성됩니다.
+        - 로고는 클릭 시 메인 홈으로 이동합니다.
+        - 검색창은 사용자가 원하는 뉴스를 검색할 수 있도록 합니다.
+        - 메뉴바는 카테고리별로 뉴스를 분류하여 사용자가 쉽게
+        - 원하는 뉴스를 찾을 수 있도록 합니다.
+    -->
+
+  <!-- 중단부 -->
+    <!--     
+        - 중단부는 최신 뉴스, 인기 뉴스, 추천 뉴스 등으로 구성됩니다.
+        - 최신 뉴스는 최근에 업데이트된 뉴스를 보여줍니다.
+        - 인기 뉴스는 현재 가장 많이 읽힌 뉴스를 보여줍니다.
+        - 추천 뉴스는 사용자의 관심사에 맞춰 추천되는 뉴스를 보여줍니다.
+     -->
+
+  <!-- 하단부 --> 
+    <!-- 
+        - 하단부는 뉴스 사이트의 정보, 이용약관, 개인정보처리방침 등으로 구성됩니다.
+        - 뉴스 사이트의 정보는 회사 소개, 연락처 등을 포함합니다.
+        - 이용약관과 개인정보처리방침은 사용자가 사이트를 이용하는 데 필요한 정보를 제공합니다.
+    -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>홈 화면 데모</title>
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; margin:0; background:#f5f5f5; }
+    .container { max-width:800px; margin:40px auto; padding:0 16px; }
+    header, footer { text-align:center; margin-bottom:24px; }
+    h2 { font-size:1.2rem; margin:24px 0 12px; }
+
+    /* 로딩 스피너 */
+    .spinner {
+      width:40px; height:40px;
+      border:4px solid #ddd;
+      border-top-color:#3498db;
+      border-radius:50%;
+      animation: spin 1s linear infinite;
+      margin:24px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 섹션 카드 */
+    .card-list { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .card {
+      background:#fff; padding:16px; border-radius:6px;
+      opacity:0; transform: translateY(20px);
+      animation: fadeInUp 0.5s forwards ease-out;
+    }
+    /* 각 카드별 지연 */
+    .card:nth-child(1){ animation-delay:0.2s; }
+    .card:nth-child(2){ animation-delay:0.4s; }
+    .card:nth-child(3){ animation-delay:0.6s; }
+    .card:nth-child(4){ animation-delay:0.8s; }
+
+    @keyframes fadeInUp {
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    .card h3 { margin:0 0 8px; font-size:1rem; }
+    .card p { margin:0; font-size:0.85rem; color:#555; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>3조이조 홈 데모</h1>
+      <div id="loader" class="spinner"></div>
+    </header>
+
+    <main>
+      <!-- 최신 뉴스 -->
+      <section>
+        <h2>최신 뉴스</h2>
+        <ul id="latest-list" class="card-list"></ul>
+      </section>
+
+      <!-- 인기 뉴스 -->
+      <section>
+        <h2>인기 뉴스</h2>
+        <ul id="popular-list" class="card-list"></ul>
+      </section>
+
+      <!-- 추천 뉴스 -->
+      <section>
+        <h2>추천 뉴스</h2>
+        <ul id="rec-list" class="card-list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 3조이조</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // 가짜 API 호출 함수
+    function fetchSection(name) {
+      return new Promise(res => {
+        setTimeout(() => {
+          res(Array.from({length:4}, (_,i)=>({
+            title: `${name} 뉴스 ${i+1}`,
+            summary: `${name} 요약문 예시 ${i+1}`
+          })));
+        }, 800);
+      });
+    }
+
+    async function initHome() {
+      const loader = document.getElementById('loader');
+      const latest = document.getElementById('latest-list');
+      const popular = document.getElementById('popular-list');
+      const rec = document.getElementById('rec-list');
+
+      // 로딩 표시
+      loader.style.display = 'block';
+
+      // 병렬 fetch
+      const [l, p, r] = await Promise.all([
+        fetchSection('최신'),
+        fetchSection('인기'),
+        fetchSection('추천')
+      ]);
+
+      loader.style.display = 'none';
+
+      // 리스트 렌더링
+      [ [latest,l], [popular,p], [rec,r] ].forEach(([ul, data]) => {
+        ul.innerHTML = data.map(item=>`
+          <li class="card">
+            <h3>${item.title}</h3>
+            <p>${item.summary}</p>
+          </li>
+        `).join('');
+      });
+    }
+
+    initHome();
+  </script>
+</body>
+</html>

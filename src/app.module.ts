@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
+import { NewsModule } from './news/news.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { AuthModule } from './auth/auth.module';
     }),
     AdminModule,
     AuthModule,
+    NewsModule,   // 뉴스 기능 모듈
+    UserModule,   // 사용자 프로필 모듈
   ],
   controllers: [AppController],
   providers: [],
