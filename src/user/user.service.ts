@@ -1,19 +1,34 @@
-// 사용자 서비스: JWT 페이로드 기반 프로필 반환
-// ===============================================
+// src/user/user.service.ts
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './user.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UserService {
-  /**
-   * @param user JWT 인증 후 Req.user 객체
-   * @returns 사용자 프로필 정보
-   */
-  getProfile(user: any) {
-    return {
-      email: user.email,
-      nickname: user.nickname || user.username,
-      joinedAt: new Date(user.iat * 1000), // 토큰 발행 시간 사용
-      role: user.role || 'member',
-    };
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec();
+  }
+
+  async findById(id: string) {
+    return this.userModel.findById(id);
+  }
+
+  async addRequest(id: string, request: { title: string; content: string }) {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { $push: { requests: request } },
+      { new: true },
+    );
+  }
+
+  async deleteRequest(id: string, requestId: string) {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { $pull: { requests: { _id: requestId } } },
+      { new: true },
+    );
   }
 }

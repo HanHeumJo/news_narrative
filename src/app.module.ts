@@ -7,6 +7,8 @@ import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { NewsModule } from './news/news.module';
 import { UserModule } from './user/user.module';
+import { CommentsModule } from './comment/comment.module';
+
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     NewsModule,   // 뉴스 기능 모듈
     UserModule,   // 사용자 프로필 모듈
+    CommentsModule, // 댓글 기능 모듈
   ],
   controllers: [AppController],
   providers: [],

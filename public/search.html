@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>3조이조 검색 결과</title>
+  <style>
+    /* ── Reset & 기본 ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 56px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; z-index: 100;
+    }
+    .header .logo {
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+    }
+    .header .controls {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .icon-button {
+      background: none; border: none;
+      font-size: 1.2rem; cursor: pointer;
+    }
+    /* .avatar { width:32px; height:32px; border-radius:50%; cursor:pointer; } */
+
+    /* ── BANNER ── */
+    .banner {
+      margin-top: 56px;
+      height: 240px;
+      background: #ddd;
+      /* background: url('banner.jpg') center/cover no-repeat; */
+    }
+
+    /* ── NAV ── */
+    .nav {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .nav ul {
+      display: flex; justify-content: center; gap: 32px;
+      list-style: none; padding: 12px 0;
+    }
+    .nav li {
+      font-size: 0.95rem; font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-container {
+      display: flex; justify-content: center;
+      margin: 24px 0; padding: 0 16px;
+    }
+    .search-container input {
+      width: 100%; max-width: 600px;
+      padding: 10px 16px;
+      border: 1px solid #ddd; border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* ── LOADER ── */
+    .spinner {
+      width: 40px; height: 40px;
+      margin: 24px auto;
+      border: 4px solid #eee;
+      border-top-color: #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESULTS LIST ── */
+    .container {
+      max-width: 1024px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+    }
+    .results {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .results li {
+      background: #fff;
+      margin-bottom: 12px;
+      padding: 16px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.4s forwards ease-out;
+    }
+    .results li:nth-child(n) {
+      /* --i 변수는 JS에서 설정 */
+      animation-delay: calc(0.1s * var(--i));
+    }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+    .results h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .results p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    /* ── HIGHLIGHT ── */
+    .highlight {
+      color: #f97316;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo" id="logo">3조이조</div>
+    <div class="controls">
+      <button class="icon-button" id="searchBtn" aria-label="검색">🔍</button>
+    </div>
+  </header>
+
+  <!-- BANNER -->
+  <div class="banner"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <ul id="navList"></ul>
+  </nav>
+
+  <!-- SEARCH -->
+  <div class="search-container">
+    <input id="homeSearch" placeholder="키워드를 입력하세요" />
+  </div>
+
+  <!-- CONTENT -->
+  <div class="container">
+    <div id="loader" class="spinner" style="display:none;"></div>
+    <ul id="results" class="results"></ul>
+  </div>
+</body>
+</html>
+<script>
+    const token = localStorage.getItem('token');
+
+    // 로고 클릭 시
+    document.getElementById('logo').addEventListener('click', () => {
+        window.location.href = 'main.html';
+    });
+
+    // 돋보기(검색) 클릭 시
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      if (token) {
+        window.location.href = 'search.html';
+      } else {
+        window.location.href = 'member/login.html';
+      }
+    });
+  
+    // 검색창 Enter 처리
+    const homeSearch = document.getElementById('homeSearch');
+    homeSearch.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        const q = encodeURIComponent(homeSearch.value.trim());
+        if (q) {
+          window.location.href = `search.html?keyword=${q}&page=1`;
+        }
+      }
+    });
+
+  // 원하는 키워드(카테고리/태그) 배열
+  const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
+
+  const navList = document.getElementById('navList');
+  tags.forEach(tag => {
+    const li = document.createElement('li');
+    li.textContent = tag;
+    if (tag === '요청하기') {
+      li.onclick = () => location.href = 'request.html';
+    } else {
+      li.onclick = () => location.href = `timeline.html?topic=${encodeURIComponent(tag)}`;
+    }
+    navList.appendChild(li);
+  });
+
+  const input = document.getElementById('homeSearch');
+  const params = new URLSearchParams(location.search);
+  const kw = params.get('keyword') || '';
+  input.value = kw;
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      const q = encodeURIComponent(input.value.trim());
+      location.search = `?keyword=${q}`;
+    }
+  });
+
+  async function render() {
+    if (!kw) return;
+    document.getElementById('loader').style.display = 'block';
+    const data = await fetch(`/api/search?keyword=${encodeURIComponent(kw)}`)
+                       .then(r=>r.json());
+    document.getElementById('loader').style.display = 'none';
+
+    const ul = document.getElementById('results');
+    ul.innerHTML = '';
+    if (!data.length) {
+      ul.innerHTML = `<p style="text-align:center;color:#777">검색 결과가 없습니다.</p>`;
+      return;
+    }
+
+    // 키워드 강조용 정규식
+    const esc = kw.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+    const regex = new RegExp(`(${esc})`, 'gi');
+
+    data.forEach((item,i) => {
+    const li = document.createElement('li');
+      li.style.setProperty('--i', i);
+      const title = item.title.replace(regex, `<span class="highlight">$1</span>`);
+      const summary = (item.summary||'').replace(regex, `<span class="highlight">$1</span>`);
+      li.innerHTML = `
+        <h3><a href="post.html?id=${item.id}">${title}</a></h3>
+        <p>${summary}</p>
+        <div class="meta">${item.category} • ${item.keywords} •${item.date}</div>
+      `;
+    ul.appendChild(li);
+    });
+  }
+  window.addEventListener('load', render);
+</script>

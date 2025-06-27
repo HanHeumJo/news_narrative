@@ -16,8 +16,8 @@ import { NewsService } from './news.service';
 
 @Controller('api')
 export class NewsController {
-  constructor(private readonly newsService: NewsService) {}
-
+  constructor(
+    private readonly newsService: NewsService,) {}
 
   @Get()
   root() {
@@ -45,7 +45,7 @@ export class NewsController {
    * GET /api/contant/:category
    * 특정 카테고리별 게시물 조회
    */
-  @Get('contant/:category')
+  @Get('content/:category')
   category(@Param('category') category: string) {
     return this.newsService.findByCategory(category);
   }
@@ -60,39 +60,20 @@ export class NewsController {
   }
 
   /**
-   * GET /api/contant?id=게시물ID
+   * GET /api/content?id=게시물ID
    * 단일 게시물 조회
    */
-  @Get('contant')
+  @Get('content')
   viewContent(@Query('id') id: string) {
     if (!id) throw new BadRequestException('id가 필요합니다.');
     return this.newsService.viewContent(id);
   }
 
   /**
-   * POST /api/comment/:id
-   * 댓글 작성 (인증 필요)
-   */
-  @Post('comment/:id')
-  @UseGuards(AuthGuard('jwt'))
-  postComment(
-    @Param('id') postId: string,
-    @Body('content') content: string,
-    @Req() req,
-  ) {
-    if (!content) throw new BadRequestException('댓글 내용을 입력하세요.');
-    return this.newsService.createComment(
-      postId,
-      req.user.email,
-      content,
-    );
-  }
-
-  /**
-   * POST /api/user/contant/:id?requestType=0 or 1
+   * POST /api/user/content/:id?requestType=0 or 1
    * 게시물 요청 작성 (일반/수정 요청) (인증 필요)
    */
-  @Post('user/contant/:id')
+  @Post('user/content/:id')
   @UseGuards(AuthGuard('jwt'))
   postRequest(
     @Param('id') postId: string,

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>3조이조 요청하기</title>
+  <style>
+    /* ── Reset & 기본 ── */
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed; top:0; left:0; right:0;
+      height:56px; background:#fff;
+      box-shadow:0 1px 4px rgba(0,0,0,0.1);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 24px; z-index:100;
+    }
+    .header .logo {
+      font-size:1rem; font-weight:700; cursor:pointer;
+    }
+    .header .controls {
+      display:flex; align-items:center; gap:12px;
+    }
+    .icon-button {
+      background:none; border:none;
+      font-size:1.2rem; cursor:pointer;
+    }
+    /* .avatar {
+      width:32px; height:32px; border-radius:50%;
+      cursor:pointer;
+    } */
+
+    /* ── BANNER ── */
+    .banner {
+      margin-top:56px; height:240px; background:#ddd;
+      /* 실제 이미지 사용 시 아래 주석 해제하세요
+      background:url('banner.jpg') center/cover no-repeat;
+      */
+    }
+
+    /* ── NAV ── */
+    .nav {
+      background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.05);
+    }
+    .nav ul {
+      display:flex; justify-content:center; gap:32px;
+      list-style:none; padding:12px 0;
+    }
+    .nav li {
+      font-size:0.95rem; font-weight:500; cursor:pointer;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-container {
+      display:flex; justify-content:center;
+      margin:24px 0; padding:0 16px;
+    }
+    .search-container input {
+      width:100%; max-width:600px;
+      padding:10px 16px;
+      border:1px solid #ddd; border-radius:4px;
+      font-size:0.9rem;
+    }
+
+    /* ── CARD 스타일 ── */
+    .container {
+      max-width:1024px; margin:0 auto 48px; padding:0 16px;
+    }
+    .request-card {
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:8px;
+      padding:24px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .form-row {
+      display:flex; align-items:flex-start; gap:16px;
+    }
+    .form-row textarea {
+      flex:1;
+      height:200px;
+      padding:12px;
+      border:1px solid #ddd;
+      border-radius:4px;
+      resize:none;
+      font-size:0.9rem;
+    }
+    .options {
+      display:flex; flex-direction:column; gap:8px;
+      font-size:0.9rem;
+    }
+    .options label {
+      display:flex; align-items:center; gap:4px;
+      cursor:pointer;
+    }
+
+    .request-text {
+      margin-top:32px;
+      text-align:center;
+      font-size:1.25rem;
+      font-weight:700;
+      color:#333;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align:center; padding:16px 0; color:#999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo" id="logo">3조이조</div>
+    <div class="controls">
+      <button class="icon-button" id="searchBtn" aria-label="검색">🔍</button>
+    </div>
+  </header>
+
+  <!-- BANNER -->
+  <div class="banner"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <ul id="navList"></ul>
+  </nav>
+
+  <!-- SEARCH BAR -->
+  <div class="search-container">
+      <input type="text" id="homeSearch" placeholder="제목을 입력하세요" />
+  </div>
+
+  <!-- REQUEST CARD -->
+  <div class="container">
+    <div class="request-card">
+        <div class="form-row">
+        <textarea id="requestContent" placeholder="요청할 내용을 입력하세요"></textarea>
+        <div class="options">
+          <label>
+            <input type="checkbox" name="type" value="new" id="requestNew"/> 게시글 요청
+          </label>
+          <label>
+            <input type="checkbox" name="type" value="edit" id="requestEdit"/> 수정 요청
+          </label>
+        </div>
+      </div>
+      <button type="button" id="submitRequest" style="margin:20px 0 0 0; padding:8px 20px;">요청하기</button>
+    </div>
+</div>
+  <footer>© 2025 3조이조</footer>
+</body>
+</html>
+<script>
+  const token = localStorage.getItem('token');
+
+  // 로고 클릭 시
+  document.getElementById('logo').addEventListener('click', () => {
+      window.location.href = 'main.html';
+  });
+
+  // 돋보기(검색) 클릭 시
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    if (token) {
+      window.location.href = 'search.html';
+    } else {
+      window.location.href = 'member/login.html';
+    }
+  });
+  
+  // 검색창 Enter 처리
+  const homeSearch = document.getElementById('homeSearch');
+  homeSearch.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      const q = encodeURIComponent(homeSearch.value.trim());
+      if (q) {
+        window.location.href = `search.html?keyword=${q}&page=1`;
+      }
+    }
+  });
+
+    // 원하는 키워드(카테고리/태그) 배열
+  const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
+
+  const navList = document.getElementById('navList');
+  tags.forEach(tag => {
+    const li = document.createElement('li');
+    li.textContent = tag;
+    if (tag === '요청하기') {
+      li.onclick = () => location.href = 'request.html';
+    } else {
+      li.onclick = () => location.href = `timeline.html?topic=${encodeURIComponent(tag)}`;
+    }
+    navList.appendChild(li);
+  });
+
+   // 체크박스 radio처럼 하나만 선택되게
+  const newBox = document.getElementById('requestNew');
+  const editBox = document.getElementById('requestEdit');
+  newBox.addEventListener('change', () => {
+    if (newBox.checked) editBox.checked = false;
+  });
+  editBox.addEventListener('change', () => {
+    if (editBox.checked) newBox.checked = false;
+  });
+
+  // 요청하기 버튼
+  document.getElementById('submitRequest').addEventListener('click', () => {
+    const type = newBox.checked ? 'new' : (editBox.checked ? 'edit' : null);
+    const content = document.getElementById('requestContent').value.trim();
+    if (!type) {
+      alert('게시글 요청/수정 요청 중 하나를 선택하세요!');
+      return;
+    }
+    if (!content) {
+      alert('요청 내용을 입력하세요!');
+      return;
+    }
+    // 실제 서버 전송 코드 예시 (POST 요청 등)
+    alert(`[${type === 'new' ? '게시글 요청' : '수정 요청'}]\n${content}`);
+    // 여기에 fetch 등 요청 코드 작성!
+  });
+
+</script>
