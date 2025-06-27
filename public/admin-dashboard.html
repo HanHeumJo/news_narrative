@@ -21,7 +21,11 @@
         <h2 class="text-xl font-bold">👤 <span id="adminName">관리자</span></h2>
         <p class="text-sm text-gray-500" id="loginTime">로그인 시각: -</p>
         <nav class="space-y-2">
-          <a href="/" class="block text-blue-600 font-medium">🏠 홈페이지</a>
+          <a
+            href="/main.html"
+            class="block font-semibold text-black cursor-pointer hover:text-blue-600"
+            >🏠 홈페이지</a
+          >
           <span
             onclick="showUserList()"
             class="block font-semibold text-black cursor-pointer hover:text-blue-600"
@@ -32,7 +36,7 @@
           <!-- 기존 nav 내부에 추가 -->
           <span
             onclick="showAllRequests()"
-            class="block font-semibold text-black cursor-pointer"
+            class="block font-semibold text-black cursor-pointer hover:text-blue-600"
             >📚 요청사항 관리</span
           >
         </nav>
@@ -80,9 +84,8 @@
               <thead class="bg-gray-50 font-semibold">
                 <tr>
                   <th class="px-4 py-3">ID</th>
-                  <th class="px-4 py-3">이름</th>
-                  <th class="px-4 py-3">이메일</th>
                   <th class="px-4 py-3">닉네임</th>
+                  <th class="px-4 py-3">이메일</th>
                   <th class="px-4 py-3 text-right">요청게시글</th>
                 </tr>
               </thead>
@@ -107,10 +110,6 @@
               class="bg-white rounded-md shadow p-4 space-y-2 text-sm text-gray-800 w-full max-w-xl"
             >
               <div class="grid grid-cols-2 gap-y-1 gap-x-4">
-                <div>
-                  <span class="font-semibold">이름:</span>
-                  <span id="nameText">-</span>
-                </div>
                 <div>
                   <span class="font-semibold">닉네임:</span>
                   <span id="nicknameText">-</span>
@@ -235,9 +234,7 @@
           >
             🔙 돌아가기
           </button>
-          <div
-            class="bg-white p-6 rounded shadow space-y-6 max-w-3xl"
-          >
+          <div class="bg-white p-6 rounded shadow space-y-6 max-w-3xl">
             <!-- 요청 작성 카드 -->
             <div class="grid grid-cols-2 gap-y-1 text-sm text-gray-800">
               <div>
@@ -267,14 +264,42 @@
               </div>
             </div>
 
-            <!-- 작성 버튼 -->
-            <div class="flex justify-end">
-              <button
-                onclick="submitPost()"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                작성 완료
-              </button>
+            <!-- 요청 수락 입력 폼 -->
+            <div id="acceptForm" class="space-y-4">
+              <label class="block">
+                <span class="font-semibold text-sm">새 게시물 제목</span>
+                <input
+                  type="text"
+                  id="acceptedTitle"
+                  class="mt-1 block w-full p-2 border rounded"
+                  placeholder="입력"
+                />
+              </label>
+
+              <label class="block">
+                <span class="font-semibold text-sm">카테고리 선택</span>
+                <select
+                  id="acceptedCategory"
+                  class="mt-1 block w-full p-2 border rounded"
+                >
+                  <option value="">카테고리를 선택하세요</option>
+                  <option value="정치">정치</option>
+                  <option value="시사">시사</option>
+                  <option value="경제">경제</option>
+                  <option value="스포츠">스포츠</option>
+                  <option value="사회">사회</option>
+                </select>
+              </label>
+
+              <!-- 작성 버튼 -->
+              <div class="flex justify-end">
+                <button
+                  onclick="submitPost()"
+                  class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  작성 완료
+                </button>
+              </div>
             </div>
           </div>
         </section>

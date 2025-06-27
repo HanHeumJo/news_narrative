@@ -1,98 +1,48 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 뉴스 흐름 타임라인 웹사이트 (3명이조)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+사회 이슈의 흐름을 뉴스와 키워드 중심으로 시각화하여  
+사용자에게 한눈에 보여주는 웹 프로젝트입니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+----------------------------------------------
 
-## Description
+## 프로젝트 소개
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **뉴스 데이터**를 수집/클러스터링/요약하여 주요 이슈의 흐름을 타임라인으로 제공합니다.
+- 키워드 검색, 뉴스 상세 보기, 사용자 참여(댓글/수정 요청) 등 다양한 기능을 지원합니다.
+- **NestJS + MongoDB** 백엔드, **React** 기반 프론트엔드로 구현되었습니다.
 
-## Project setup
+---------------------------------------------
 
-```bash
-$ npm install
-```
+## 주요 기능
 
-## Compile and run the project
+- **키워드 기반 뉴스 검색**
+- **카테고리별 뉴스 필터링**  
+- **뉴스 상세 페이지 및 요약/핵심 키워드 제공**
+- **사용자 참여: 댓글, 수정 요청**
+- **관리자 뉴스 관리 페이지**
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## 실행 방법
+ - 터미널에 **npm install** 입력
+ - 터미널에 **npm start** 입력
+ - 브라우저 주소창에 **localhost:3000/main.html** 입력
 
-# production mode
-$ npm run start:prod
-```
+---
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 홈페이지 사용법
+ - 상단 부
+    - 검색 창에서 검색 시 -> 키워드 내용으로 검색 결과를 보여줌 (search.html)
+    - 좌측 위 '3명이조' 클릭 시 메인 화면(main.html)로 이동
+    - 우측 위 '로그인' 클릭 시
+    - 이번달 뉴스 클릭시 -> 뉴스 내용 표시(post.html)
+    - 카테고리 클릭 시 해당 카테고리를 보유하고 있는 뉴스 내용 표시
+    - 요청하기 클릭 시 요청하기 화면(request.html)으로 이동
+      - 요청할 때 제목과 내용을 작성하고 AI 서사 정리 클릭시 해당내용 기반으로 AI가 내용을 재구성해줌
+  - 관리자 로그인 (adminlogin.html)
+    - 사용자 목록을 보여줌 (admin-dashboard.html)
+    - 상세보기 클릭 시 사용자의 정보 상세보기 (admin-dashboard.html)
+    - 상세보기에서 사용자의 요청목록을 클릭하여 상세보기 (admin-dashboard.html)
+    - 요청 게시글 클릭하여 사용자의 요청사항 수락 및 삭제 (admin-dashboard.html)
+    - 요청 사항 목록으로 전체 사용자의 요청사항을 보여줌 (admin-dashboard.html)
+    - 요청 사항 클릭 시 해당 요창사항 상세보기 (admin-dashboard.html)

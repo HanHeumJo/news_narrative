@@ -31,7 +31,7 @@
 
         try {
             // 헤더에 JWT 토큰을 담아 프로필 정보 요청
-            const response = await fetch('/api/members/profile', {
+            const response = await fetch('/members/profile', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`

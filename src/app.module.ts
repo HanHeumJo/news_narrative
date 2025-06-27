@@ -4,9 +4,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { NewsModule } from './news/news.module';
-import { UserModule } from './user/user.module';
 import { CommentsModule } from './comment/comment.module';
-
+import { MemberModule } from './member/member.module';
+import { OpenaiModule } from './openai/openai.module';
 
 @Module({
   imports: [
@@ -20,9 +20,9 @@ import { CommentsModule } from './comment/comment.module';
     }),
     AdminModule,
     AuthModule,
-    NewsModule,   // 뉴스 기능 모듈
-    UserModule,   // 사용자 프로필 모듈
+    NewsModule, // 뉴스 기능 모듈
     CommentsModule, // 댓글 기능 모듈
+    MemberModule, OpenaiModule
   ],
 })
 export class AppModule {}

@@ -48,7 +48,7 @@
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch('/api/members/login', {
+            const response = await fetch('/members/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -60,12 +60,12 @@
 
             if (response.ok) {
                 // 로그인 성공 시 JWT 토큰을 localStorage에 저장
-                localStorage.setItem('accessToken', data.access_token);
+                localStorage.setItem('access_token', data.access_token);
                 
                 messageDiv.textContent = '로그인 성공! 프로필 페이지로 이동합니다.';
                 messageDiv.className = 'alert alert-success';
                 setTimeout(() => {
-                    window.location.href = '/member/profile.html';
+                    window.location.href = '/main.html';
                 }, 1000);
 
             } else {

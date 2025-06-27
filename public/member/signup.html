@@ -97,8 +97,8 @@
         }
 
         try {
-            console.log(`[요청] /api/members/check-nickname?nickname=${nickname}`);
-            const response = await fetch(`/api/members/check-nickname?nickname=${nickname}`);
+            console.log(`[요청] /members/check-nickname?nickname=${nickname}`);
+            const response = await fetch(`/members/check-nickname?nickname=${nickname}`);
             
             console.log('[응답] 상태 코드:', response.status);
             
@@ -162,7 +162,7 @@
         };
 
         try {
-            const response = await fetch('/api/members/signup', {
+            const response = await fetch('/members/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

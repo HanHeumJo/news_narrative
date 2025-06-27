@@ -13,6 +13,7 @@ export class Admin {
   
   @Prop({ required: true })
   name: string;
+  
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);

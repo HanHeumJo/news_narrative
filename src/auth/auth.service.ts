@@ -53,6 +53,7 @@ export class AuthService {
       sub: admin._id,
       username: admin.username,
       name: admin.name,
+      role:'admin',
     };
     return {
       access_token: this.jwtService.sign(payload),

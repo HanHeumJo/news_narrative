@@ -1,104 +1,250 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>3조이조 – 포스트 상세</title>
-  <style>
-    * { box-sizing: border-box; margin:0; padding:0; }
-    body { font-family:'Noto Sans KR',sans-serif; background:#f5f5f5; color:#333; }
-    a { text-decoration:none; color:inherit; }
-    .header { position: fixed; top:0; left:0; right:0; height:56px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:100; }
-    .header .logo { font-size:1rem; font-weight:700; cursor:pointer; }
-    .header .controls { display:flex; align-items:center; gap:12px; }
-    .header .icon-button { background:none; border:none; font-size:1.2rem; cursor:pointer; }
-    .banner { margin-top:56px; height:240px; background:#ddd; }
-    .nav { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
-    .nav ul { display:flex; justify-content:center; gap:32px; list-style:none; padding:12px 0; }
-    .nav li { font-size:0.95rem; font-weight:500; cursor:pointer; }
-    .search-container { display:flex; justify-content:center; margin:24px 0; padding:0 16px; }
-    .search-container input { width:100%; max-width:600px; padding:10px 16px; border:1px solid #ddd; border-radius:4px; font-size:0.9rem; }
-    .container { max-width:1024px; margin:0 auto 48px; padding:0 16px; }
-    .detail-heading { font-size:1.1rem; font-weight:500; margin-bottom:12px; }
-    .detail-card { background:#fff; border:1px solid #eee; border-radius:8px; padding:32px; box-shadow:0 2px 6px rgba(0,0,0,0.05); text-align:left; }
-    .detail-card h2 { font-size:1.5rem; font-weight:700; margin:0; }
-    footer { text-align:center; padding:16px 0; color:#999; }
-    .comment {border-top: 1px solid #eee; padding: 12px 0;font-size: 0.9rem;}
-    .comment b {margin-right: 8px;}
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>3조이조 – 포스트 상세</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Noto Sans KR', sans-serif;
+        background: #f5f5f5;
+        color: #333;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        z-index: 100;
+      }
+      .header .logo {
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .header .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+      .banner {
+        margin-top: 56px;
+        height: 240px;
+        background: #ddd;
+      }
+      .nav {
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      }
+      .nav ul {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        list-style: none;
+        padding: 12px 0;
+      }
+      .nav li {
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .search-container {
+        display: flex;
+        justify-content: center;
+        margin: 24px 0;
+        padding: 0 16px;
+      }
+      .search-container input {
+        width: 100%;
+        max-width: 600px;
+        padding: 10px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+      .container {
+        max-width: 1024px;
+        margin: 0 auto 48px;
+        padding: 0 16px;
+      }
+      .detail-heading {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      .detail-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 32px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        text-align: left;
+      }
+      .detail-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+      }
+      footer {
+        text-align: center;
+        padding: 16px 0;
+        color: #999;
+      }
+      .comment {
+        border-top: 1px solid #eee;
+        padding: 12px 0;
+        font-size: 0.9rem;
+      }
+      .comment b {
+        margin-right: 8px;
+      }
+      .content-section {
+        display: none;
+      }
+      .content-section.active {
+        display: block;
+      }
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo" id="logo">3조이조</div>
-    <div class="controls">
-      <button class="icon-button" id="searchBtn" aria-label="검색">🔍</button>
+      .hidden {
+        display: none;
+      }
+      /* 공통 버튼 스타일 */
+      .icon-button {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        color: #fff;
+      }
+
+      /* 로그인 버튼 (초록) */
+      .icon-login {
+        background-color: #28a745;
+      }
+      .icon-login:hover {
+        background-color: #218838;
+      }
+
+      /* 관리자 로그인 버튼 (파랑) */
+      .icon-admin-login {
+        background-color: #007bff;
+      }
+      .icon-admin-login:hover {
+        background-color: #0056b3;
+      }
+
+      /* 로그아웃 버튼 (빨강) */
+      .icon-logout {
+        background-color: #dc3545;
+      }
+      .icon-logout:hover {
+        background-color: #c82333;
+      }
+
+      /* 관리자 페이지 이동 버튼 (보라) */
+      .icon-admin-page {
+        background-color: #6f42c1;
+      }
+      .icon-admin-page:hover {
+        background-color: #5936a3;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo" id="logo">3조이조</div>
+      <div class="controls" id="buttonArea">
+        <button class="icon-button" id="searchBtn" aria-label="검색"></button>
+        <!-- 로그인 회원가입 -->
+      </div>
+    </header>
+
+    <!-- BANNER -->
+    <div class="banner"></div>
+
+    <!-- NAV -->
+    <nav class="nav">
+      <ul id="navList"></ul>
+    </nav>
+
+    <!-- SEARCH -->
+    <div class="search-container">
+      <input id="homeSearch" placeholder="키워드를 입력하세요" />
     </div>
-  </header>
 
-  <!-- BANNER -->
-  <div class="banner"></div>
-
-  <!-- NAV -->
-  <nav class="nav">
-    <ul id="navList"></ul>
-  </nav>
-
-  <!-- SEARCH -->
-  <div class="search-container">
-    <input id="homeSearch" placeholder="키워드를 입력하세요" />
-  </div>
-
-  <!-- DETAIL CONTENT -->
-  <div class="container">
-    <div class="detail-heading" id="postTitle">로딩 중...</div>
-    <div class="detail-card" id="postContent">
-      로딩 중...
+    <!-- DETAIL CONTENT -->
+    <div class="container">
+      <div class="detail-heading" id="postTitle">로딩 중...</div>
+      <div class="detail-card" id="postContent">로딩 중...</div>
     </div>
-  </div>
-  
-  <!-- 댓글 섹션 -->
-  <div class="container">
-  <div class="detail-card" id="commentSection">
-    <h2 style="font-size:1.1rem; margin-bottom:16px;">💬 댓글</h2>
 
-    <!-- 댓글 작성 -->
-    <textarea id="commentInput" placeholder="댓글을 입력하세요" style="width:100%; height:80px; padding:8px; font-size:0.9rem; border:1px solid #ccc; border-radius:4px;"></textarea>
-    <button id="submitComment" style="margin-top:8px; padding:6px 16px;">댓글 등록</button>
+    <!-- 댓글 섹션 -->
+    <div class="container">
+      <div class="detail-card" id="commentSection">
+        <h2 style="font-size: 1.1rem; margin-bottom: 16px">💬 댓글</h2>
 
-    <!-- 댓글 리스트 -->
-      <div id="commentList" style="margin-top:20px;">
-        <p>댓글을 불러오는 중...</p>
+        <!-- 댓글 작성 -->
+        <textarea
+          id="commentInput"
+          placeholder="댓글을 입력하세요"
+          style="
+            width: 100%;
+            height: 80px;
+            padding: 8px;
+            font-size: 0.9rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+          "
+        ></textarea>
+        <button id="submitComment" style="margin-top: 8px; padding: 6px 16px">
+          댓글 등록
+        </button>
+
+        <!-- 댓글 리스트 -->
+        <div id="commentList" style="margin-top: 20px">
+          <p>댓글을 불러오는 중...</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <footer>© 2025 3조이조</footer>
-</body>
+    <footer>© 2025 3조이조</footer>
+  </body>
 </html>
 
 <!-- (생략) HTML <head>, <style>, <body> 구조는 기존과 동일하며, focus는 <script> 내부 -->
 <script>
-  const token = localStorage.getItem('token');
-
   // 로고 클릭 시
   document.getElementById('logo').addEventListener('click', () => {
     window.location.href = 'main.html';
   });
 
-  // 돋보기(검색) 클릭 시
-  document.getElementById('searchBtn').addEventListener('click', () => {
-    if (token) {
-      window.location.href = 'search.html';
-    } else {
-      window.location.href = 'member/login.html';
-    }
-  });
-
   // 검색창 Enter 처리
   const homeSearch = document.getElementById('homeSearch');
-  homeSearch.addEventListener('keypress', e => {
+  homeSearch.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       const q = encodeURIComponent(homeSearch.value.trim());
       if (q) {
@@ -110,14 +256,15 @@
   // ✅ 카테고리 목록 생성 + 클릭 시 category 검색 페이지로 이동
   const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
   const navList = document.getElementById('navList');
-  tags.forEach(tag => {
+  tags.forEach((tag) => {
     const li = document.createElement('li');
     li.textContent = tag;
     if (tag === '요청하기') {
-      li.onclick = () => location.href = 'request.html';
+      li.onclick = () => (location.href = 'request.html');
     } else {
       const encoded = encodeURIComponent(tag);
-      li.onclick = () => location.href = `search.html?category=${encoded}&page=1`;
+      li.onclick = () =>
+        (location.href = `search.html?category=${encoded}&page=1`);
     }
     navList.appendChild(li);
   });
@@ -135,16 +282,14 @@
       return;
     }
     const news = await res.json();
-    document.getElementById('postTitle').textContent = news.title || '제목 없음';
+    document.getElementById('postTitle').textContent =
+      news.title || '제목 없음';
     document.getElementById('postContent').innerHTML = `
       <p style="color:#888;font-size:0.9em;">
-        <b>요약:</b> ${news.summary || '-'}<br>
         <b>날짜:</b> ${news.date ? new Date(news.date).toLocaleDateString() : '-'}<br>
-        <b>언론사:</b> ${news.press || '-'} / <b>기자:</b> ${news.reporter || '-'}
       </p>
       <div style="margin:1em 0;">${news.content || ''}</div>
-      <p><b>카테고리:</b> ${(news.category || []).join(', ')}</p>
-      <p><b>키워드:</b> ${(news.keywords || []).join(', ')}</p>
+      <p><b>카테고리:</b> ${(news.tags || []).join(', ')}</p>
       ${news.thumbnail ? `<img src="${news.thumbnail}" alt="썸네일" style="max-width:200px;border-radius:8px;">` : ''}
       ${news.url ? `<p><a href="${news.url}" target="_blank">관련 기사 바로가기</a></p>` : ''}
     `;
@@ -168,7 +313,7 @@
         return;
       }
       commentList.innerHTML = '';
-      comments.forEach(c => {
+      comments.forEach((c) => {
         const div = document.createElement('div');
         div.style = 'border-top:1px solid #eee; padding:8px 0;';
         div.innerHTML = `
@@ -183,31 +328,79 @@
   }
 
   // 댓글 작성
-  document.getElementById('submitComment').addEventListener('click', async () => {
-    const content = document.getElementById('commentInput').value.trim();
-    if (!content) {
-      alert('댓글을 입력하세요.');
-      return;
-    }
+  document
+    .getElementById('submitComment')
+    .addEventListener('click', async () => {
+      const content = document.getElementById('commentInput').value.trim();
+      if (!content) {
+        alert('댓글을 입력하세요.');
+        return;
+      }
 
-    const nickname = prompt('닉네임을 입력해주세요:', '익명');
-    if (nickname === null) return;
+      const nickname = prompt('닉네임을 입력해주세요:', '익명');
+      if (nickname === null) return;
 
-    const res = await fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        newsId: postId,
-        nickname,
-        content
-      })
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newsId: postId,
+          nickname,
+          content,
+        }),
+      });
+
+      if (res.ok) {
+        document.getElementById('commentInput').value = '';
+        loadComments(postId);
+      } else {
+        alert('댓글 등록 실패');
+      }
     });
 
-    if (res.ok) {
-      document.getElementById('commentInput').value = '';
-      loadComments(postId);
+  function initHeaderButtons() {
+    const buttonArea = document.getElementById('buttonArea');
+    const token = localStorage.getItem('access_token'); // ✅ 수정됨
+    buttonArea.innerHTML = '';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const isAdmin = payload?.role === 'admin';
+
+        if (isAdmin) {
+          buttonArea.innerHTML = `
+            <button class="icon-button icon-admin-page" onclick="goToAdmin()">관리자 페이지</button>
+            <button class="icon-button icon-logout" onclick="logout()">로그아웃</button>
+          `;
+        } else {
+          buttonArea.innerHTML = `
+            <button class="icon-button icon-logout" onclick="logout()">로그아웃</button>
+          `;
+        }
+      } catch (e) {
+        console.warn('토큰 파싱 실패', e);
+        buttonArea.innerHTML = `
+        <button class="icon-button" onclick="logout()">로그아웃</button>
+      `;
+      }
     } else {
-      alert('댓글 등록 실패');
+      buttonArea.innerHTML = `
+        <button class="icon-button icon-login" onclick="location.href='member/login.html'">로그인</button>
+        <button class="icon-button icon-admin-login" onclick="location.href='adminlogin.html'">관리자 로그인</button>
+      `;
     }
-  });
+  }
+
+  function logout() {
+    localStorage.removeItem('access_token'); // ✅ 수정
+    alert('로그아웃되었습니다.');
+    window.location.reload();
+  }
+
+  function goToAdmin() {
+    window.location.href = '/admin-dashboard.html';
+  }
+
+  document.addEventListener('DOMContentLoaded', initHeaderButtons);
 </script>

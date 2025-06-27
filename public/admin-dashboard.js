@@ -6,7 +6,7 @@ if (!token) {
 
 let selectedRequest = null;
 
-let lastViewedUser = null;
+let lastViewedMember = null;
 
 let requestDetailFromAllRequests = false;
 
@@ -28,21 +28,20 @@ fetch('/admin/me', {
   });
 
 async function loadUsers() {
-  const res = await fetch('/user', {
+  const res = await fetch('/members', {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const users = await res.json();
+  const members = await res.json();
   const tbody = document.getElementById('userTableBody');
   tbody.innerHTML = '';
 
-  users.forEach((user, index) => {
+  members.forEach((member, index) => {
     const row = document.createElement('tr');
     row.classList.add('border-b', 'hoverable-row');
     row.innerHTML = `
       <td class="px-4 py-3">${index + 1}</td>
-      <td class="px-4 py-3">${user.name}</td>
-      <td class="px-4 py-3">${user.email}</td>
-      <td class="px-4 py-3">${user.nickname}</td>
+      <td class="px-4 py-3">${member.nickname}</td>
+      <td class="px-4 py-3">${member.email}</td>
       <td class="px-4 py-3 text-right">
         <button class="bg-blue-500 text-white px-3 py-1 rounded request-btn">보기</button>
       </td>
@@ -50,35 +49,34 @@ async function loadUsers() {
 
     row.querySelector('.request-btn').addEventListener('click', (event) => {
       event.stopPropagation(); // 상세정보 클릭과 충돌 방지
-      viewRequests(user._id);
+      viewRequests(member._id);
     });
 
     row.addEventListener('click', () => {
-      openUserDetail(user._id);
+      openUserDetail(member._id);
     });
 
     tbody.appendChild(row);
   });
 }
 
-async function openUserDetail(userId) {
+async function openUserDetail(memberId) {
   try {
-    const res = await fetch(`/user/${userId}`, {
+    const res = await fetch(`/members/${memberId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const user = await res.json();
+    const member = await res.json();
 
     // 사용자 요약 정보 표시
-    document.getElementById('nameText').textContent = user.name;
-    document.getElementById('nicknameText').textContent = user.nickname;
-    document.getElementById('emailText').textContent = user.email;
-    document.getElementById('interestsText').textContent = user.interests;
+    document.getElementById('nicknameText').textContent = member.nickname;
+    document.getElementById('emailText').textContent = member.email;
+    document.getElementById('interestsText').textContent = member.interests;
     document.getElementById('joinDateText').textContent = new Date(
-      user.createdAt,
+      member.createdAt,
     ).toLocaleDateString();
 
     // 요청 목록 불러오기
-    const reqRes = await fetch(`/user/${userId}/requests`, {
+    const reqRes = await fetch(`/members/${memberId}/requests`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const requests = await reqRes.json();
@@ -101,7 +99,7 @@ async function openUserDetail(userId) {
   `;
 
         li.addEventListener('click', () => {
-          showRequestDetail(r, user); // 요청 상세보기 함수 연결
+          showRequestDetail(r, member); // 요청 상세보기 함수 연결
         });
 
         listEl.appendChild(li);
@@ -126,20 +124,39 @@ function goBackToUserDetail() {
   if (requestDetailFromAllRequests) {
     document.getElementById('requestDetailSection').classList.add('hidden');
     document.getElementById('allRequestsSection').classList.remove('hidden');
-  } else if (lastViewedUser && lastViewedUser._id) {
+  } else if (lastViewedMember && lastViewedMember._id) {
     document.getElementById('requestDetailSection').classList.add('hidden');
-    openUserDetail(lastViewedUser._id); // 내부에서 allRequestsSection 숨김 처리 필요
+    openUserDetail(lastViewedMember._id); // 내부에서 allRequestsSection 숨김 처리 필요
   } else {
     showUserList();
   }
 }
 
-async function viewRequests(userId) {
+async function viewRequests(memberId) {
   try {
-    const res = await fetch(`/user/${userId}/requests`, {
+    const res = await fetch(`/members/${memberId}/requests`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    // 에러 응답 처리
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(
+        `[viewRequests] 서버 오류 응답: ${res.status} - ${errText}`,
+      );
+      alert('요청 정보를 불러오는 데 실패했습니다.');
+      return;
+    }
+
     const requests = await res.json();
+
+    // 응답 유효성 검사
+    if (!Array.isArray(requests)) {
+      console.error('[viewRequests] 응답 형식이 배열이 아닙니다:', requests);
+      alert('요청 정보를 불러올 수 없습니다 (데이터 형식 오류).');
+      return;
+    }
+
     const list = document.getElementById('requestList');
     list.innerHTML = '';
 
@@ -158,9 +175,7 @@ async function viewRequests(userId) {
             </div>
             <div class="flex flex-col gap-2 items-end">
               <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                onclick="openPostForm('${userId}', '${r._id}', \`${r.title}\`, \`${r.content}\`)">수락</button>
-              <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                onclick="deleteRequest('${userId}', '${r._id}')">삭제</button>
+                onclick="openPostForm('${memberId}', '${r._id ?? ''}', \`${r.title}\`, \`${r.content}\`)">수락</button>
             </div>
           </div>
         `;
@@ -171,7 +186,7 @@ async function viewRequests(userId) {
     document.getElementById('requestModal').classList.remove('hidden');
   } catch (e) {
     alert('요청 정보를 불러오는 데 실패했습니다.');
-    console.error(e);
+    console.error('[viewRequests] 요청 실패:', e);
   }
 }
 
@@ -179,45 +194,85 @@ function closeModal() {
   document.getElementById('requestModal').classList.add('hidden');
 }
 
-
 function closePostModal() {
   document.getElementById('postModal').classList.add('hidden');
   selectedRequest = null;
 }
 
 async function submitPost() {
-  const { userId, requestId } = selectedRequest;
-  const title = document.getElementById('postTitle').value;
-  const content = document.getElementById('postContent').value;
+  const { memberId, requestId } = selectedRequest || {};
 
-  await fetch('/posts', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ title, content, userId }),
-  });
+  // 제목과 카테고리는 입력 필드에서
+  const title = document.getElementById('acceptedTitle')?.value?.trim();
+  const category = document.getElementById('acceptedCategory')?.value?.trim();
 
-  await fetch(`/user/${userId}/requests/${requestId}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  // 내용은 사용자 요청 그대로 사용 (숨겨진 div/span에서 가져오기)
+  const content = document.getElementById('postRequestContent')?.textContent?.trim();
 
-  closePostModal();
-  closeModal();
-  location.reload();
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('관리자 인증이 필요합니다.');
+    return;
+  }
+
+  if (!title || !content || !category) {
+    alert('제목, 내용, 카테고리를 모두 입력해주세요.');
+    return;
+  }
+
+  try {
+    // 1. 게시물 저장
+    const res = await fetch('/api/manual', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        content,
+        tag: category,
+      }),
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error('게시글 저장 실패: ' + msg);
+    }
+
+    // 2. 요청 삭제
+    const delRes = await fetch(`/members/${memberId}/requests/${requestId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!delRes.ok) {
+      const msg = await delRes.text();
+      throw new Error('요청 삭제 실패: ' + msg);
+
+    }
+
+    alert('게시글이 등록되고 요청이 삭제되었습니다.');
+    closePostModal();
+    closeModal();
+    location.reload();
+  } catch (err) {
+    console.error(err);
+    alert('에러 발생: ' + err.message);
+  }
 }
 
-async function deleteRequest(userId, requestId) {
+async function deleteRequest(memberId, requestId) {
   if (!confirm('이 요청을 삭제하시겠습니까?')) return;
-  const res = await fetch(`/user/${userId}/requests/${requestId}`, {
+  const res = await fetch(`/members/${memberId}/requests/${requestId}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.ok) {
     alert('삭제되었습니다.');
-    viewRequests(userId);
+    viewRequests(memberId);
   } else {
     const err = await res.json();
     alert(`삭제 실패: ${err.message}`);
@@ -231,21 +286,22 @@ function formatDate(dateString) {
   return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}`;
 }
 
-function showRequestDetail(request, user) {
-  lastViewedUser = user;
+function showRequestDetail(request, member) {
+  lastViewedMember = member;
 
   requestDetailFromAllRequests =
     document
       .getElementById('allRequestsSection')
       .classList.contains('hidden') === false;
 
-  document.getElementById('detailNickname').textContent = user.nickname || '-';
-  document.getElementById('detailEmail').textContent = user.email || '-';
+  document.getElementById('detailNickname').textContent =
+    member.nickname || '-';
+  document.getElementById('detailEmail').textContent = member.email || '-';
   document.getElementById('detailJoinDate').textContent = formatDate(
-    user.createdAt,
+    member.createdAt,
   );
   document.getElementById('detailRequestCount').textContent =
-    user.requests?.length || 0;
+    member.requests?.length || 0;
 
   document.getElementById('detailTitle').textContent = request.title || '-';
   document.getElementById('detailContent').textContent = request.content || '-';
@@ -274,17 +330,17 @@ function showAllRequests() {
   document.getElementById('requestDetailSection').classList.add('hidden');
   document.getElementById('postWriteSection').classList.add('hidden');
 
-  fetch('/user', {
+  fetch('/members', {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((res) => res.json())
-    .then((users) => {
+    .then((members) => {
       const tbody = document.getElementById('allRequestsTableBody');
       tbody.innerHTML = '';
 
       let index = 1;
-      users.forEach((user) => {
-        (user.requests || []).forEach((req) => {
+      members.forEach((member) => {
+        (member.requests || []).forEach((req) => {
           const tr = document.createElement('tr');
           tr.classList.add('hover:bg-gray-100', 'cursor-pointer');
 
@@ -296,7 +352,7 @@ function showAllRequests() {
           `;
 
           tr.addEventListener('click', () => {
-            showRequestDetail(req, user);
+            showRequestDetail(req, member);
           });
 
           tbody.appendChild(tr);
@@ -330,8 +386,8 @@ function showPostWriteSection(request) {
     request.content || '-';
 }
 
-function openPostForm(userId, requestId, title, content) {
-  selectedRequest = { userId, requestId, title, content };
+function openPostForm(memberId, requestId, title, content) {
+  selectedRequest = { memberId, requestId, title, content };
 
   // 기존 섹션 숨김
   [
@@ -353,19 +409,19 @@ function openPostForm(userId, requestId, title, content) {
   document.getElementById('writeRequestCount').textContent = '-';
 
   // 사용자 정보 불러오기
-  fetch(`/user/${userId}`, {
+  fetch(`/members/${memberId}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((res) => res.json())
-    .then((user) => {
+    .then((member) => {
       document.getElementById('writeNickname').textContent =
-        user.nickname || '-';
-      document.getElementById('writeEmail').textContent = user.email || '-';
+        member.nickname || '-';
+      document.getElementById('writeEmail').textContent = member.email || '-';
       document.getElementById('writeJoinDate').textContent = formatDate(
-        user.createdAt,
+        member.createdAt,
       );
       document.getElementById('writeRequestCount').textContent =
-        user.requests?.length || 0;
+        member.requests?.length || 0;
     });
 
   // 섹션 보이기
@@ -382,16 +438,16 @@ function closePostModal() {
 
 async function loadAllRequests() {
   const token = localStorage.getItem('access_token');
-  const res = await fetch('/user', {
+  const res = await fetch('/members', {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const users = await res.json();
+  const members = await res.json();
 
   const container = document.getElementById('allRequestsList');
   container.innerHTML = '';
 
-  users.forEach((user) => {
-    user.requests?.forEach((r) => {
+  members.forEach((member) => {
+    member.requests?.forEach((r) => {
       const wrapper = document.createElement('div');
       const date = new Date(r.createdAt).toLocaleDateString();
       wrapper.className =
@@ -401,14 +457,14 @@ async function loadAllRequests() {
         <div>
           <p class="font-bold text-gray-700 mb-1">${r.title}</p>
           <p class="text-sm text-gray-500">${r.content}</p>
-          <p class="text-xs text-gray-400 mt-2">${user.nickname} (${user.email})</p>
+          <p class="text-xs text-gray-400 mt-2">${member.nickname} (${member.email})</p>
           <p class="text-xs text-gray-500 mt-1">요청일자: ${date}</p>
         </div>
         <div class="flex gap-2 items-start">
           <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-            onclick="openPostForm('${user._id}', '${r._id}', \`${r.title}\`, \`${r.content}\`)">수락</button>
+            onclick="openPostForm('${member._id}', '${r._id}', \`${r.title}\`, \`${r.content}\`)">수락</button>
           <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-            onclick="deleteRequest('${user._id}', '${r._id}')">삭제</button>
+            onclick="deleteRequest('${member._id}', '${r._id}')">삭제</button>
         </div>
       `;
       container.appendChild(wrapper);
@@ -416,12 +472,12 @@ async function loadAllRequests() {
   });
 }
 
-function renderAllRequests(users) {
+function renderAllRequests(members) {
   const list = document.getElementById('allRequestsList');
   list.innerHTML = '';
 
-  users.forEach((user) => {
-    (user.requests || []).forEach((req, idx) => {
+  members.forEach((member) => {
+    (member.requests || []).forEach((req, idx) => {
       const div = document.createElement('div');
       div.className =
         'flex justify-between items-center bg-white p-4 rounded shadow-sm cursor-pointer hover:bg-gray-100';
@@ -432,7 +488,7 @@ function renderAllRequests(users) {
         </div>
         <span class="text-xl text-gray-400">→</span>
       `;
-      div.addEventListener('click', () => showRequestDetail(user, req));
+      div.addEventListener('click', () => showRequestDetail(member, req));
       list.appendChild(div);
     });
   });
@@ -440,5 +496,5 @@ function renderAllRequests(users) {
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('access_token');
-  window.location.href = '/adminlogin.html';
+  window.location.href = '/main.html';
 });

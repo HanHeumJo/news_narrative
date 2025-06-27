@@ -16,8 +16,7 @@ import { NewsService } from './news.service';
 
 @Controller('api')
 export class NewsController {
-  constructor(
-    private readonly newsService: NewsService,) {}
+  constructor(private readonly newsService: NewsService) {}
 
   @Get()
   root() {
@@ -46,7 +45,7 @@ export class NewsController {
    * 특정 카테고리별 게시물 조회
    */
   @Get('search-by-category')
-    searchByCategory(@Query('category') category: string) {
+  searchByCategory(@Query('category') category: string) {
     return this.newsService.findByCategory(category);
   }
 
@@ -89,6 +88,20 @@ export class NewsController {
       type,
       content,
       req.user.email,
+    );
+  }
+
+  @Post('manual')
+  async manualSave(
+    @Body() body: { title: string; content: string; tag: string },
+  ) {
+    if (!body.title || !body.content || !body.tag) {
+      throw new BadRequestException('제목, 내용, 카테고리는 필수입니다.');
+    }
+    return this.newsService.acceptRequestAsNews(
+      body.title,
+      body.content,
+      body.tag,
     );
   }
 }
