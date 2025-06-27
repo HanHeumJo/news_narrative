@@ -3,8 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
-import { UserService } from './user/user.service';
+import { NewsModule } from './news/news.module';
 import { UserModule } from './user/user.module';
+import { CommentsModule } from './comment/comment.module';
+
 
 @Module({
   imports: [
@@ -18,7 +20,9 @@ import { UserModule } from './user/user.module';
     }),
     AdminModule,
     AuthModule,
-    UserModule,
+    NewsModule,   // 뉴스 기능 모듈
+    UserModule,   // 사용자 프로필 모듈
+    CommentsModule, // 댓글 기능 모듈
   ],
 })
 export class AppModule {}

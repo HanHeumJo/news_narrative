@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>3조이조 메인</title>
+  <style>
+    /* ── Reset & 기본 ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Noto Sans KR', sans-serif; 
+      background-color: #f5f5f5; 
+      color: #333; 
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── HEADER ── */
+    .header {
+      position: fixed; top: 0; left: 0; width: 100%;
+      height: 56px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+    .header .logo {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .header .controls {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .header .icon-button {
+      background: none; border: none;
+      font-size: 1.2rem; cursor: pointer;
+    }
+    /* .header .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer;
+    } */
+
+    /* ── BANNER ── */
+    .banner {
+      margin-top: 56px; /* header 높이 만큼 띄우기 */
+      width: 100%; height: 240px;
+      background-color: #ddd;
+      /* 실제 이미지 사용 시 아래 주석 해제하세요 */
+      /* background: url('banner.jpg') center/cover no-repeat; */
+    }
+
+    /* ── NAVIGATION ── */
+    .nav {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .nav ul {
+      display: flex; justify-content: center;
+      list-style: none; gap: 32px;
+      padding: 12px 0;
+    }
+    .nav li {
+      font-size: 0.95rem; font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-container {
+      display: flex; justify-content: center;
+      margin: 24px 0;
+      padding: 0 16px;
+    }
+    .search-container input {
+      width: 100%; max-width: 600px;
+      padding: 10px 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* ── CONTENT AREA ── */
+    .container {
+      max-width: 1024px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+    }
+    .container h2 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    /* 이 달의 뉴스 카드 */
+    .news-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .news-card ul {
+      list-style: none;
+    }
+    .news-card li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+    .news-card li:last-child {
+      border-bottom: none;
+    }
+    .news-card li:hover {
+      background: #fafafa;
+    }
+    .news-card .title {
+      flex: 1;
+    }
+    .news-card .arrow {
+      color: #bbb;
+      font-size: 1rem;
+    }
+
+    /* ── FIXED FOOTER 여유용 (선택) ── */
+    footer {
+      text-align: center;
+      padding: 16px 0;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo" id="logo">3조이조</div>
+    <div class="controls">
+      <button class="icon-button" id="searchBtn" aria-label="검색">🔍</button>
+    </div>
+  </header>
+
+  <!-- BANNER -->
+  <div class="banner"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <ul id="navList"></ul>
+  </nav>
+
+
+  <!-- SEARCH -->
+  <div class="search-container">
+    <input id="homeSearch" type="text" placeholder="키워드를 입력하세요." />
+  </div>
+
+  <!-- CONTENT -->
+  <div class="container">
+    <h2>이 달의 뉴스</h2>
+    <div class="news-card">
+      <ul id="monthlyNews"></ul>
+    </div>
+  </div>
+
+  <footer>© 2025 3조이조</footer>
+
+</body>
+</html>
+<script>
+  const token = localStorage.getItem('token');
+
+  // 로고 클릭
+  document.getElementById('logo').onclick = () => location.href = 'main.html';
+
+  // 검색 버튼
+  document.getElementById('searchBtn').onclick = () => {
+    if (token) location.href = 'search.html';
+    else location.href = 'member/login.html';
+  };
+
+  // 엔터 검색
+  document.getElementById('homeSearch').addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      const q = homeSearch.value.trim();
+      if (q) location.href = `search.html?keyword=${encodeURIComponent(q)}&page=1`;
+    }
+  });
+
+  // 카테고리 메뉴
+  const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
+  const navList = document.getElementById('navList');
+  tags.forEach(tag => {
+    const li = document.createElement('li');
+    li.textContent = tag;
+    li.onclick = () => {
+      if (tag === '요청하기') location.href = 'request.html';
+      else location.href = `search.html?category=${encodeURIComponent(tag)}&page=1`;
+    };
+    navList.appendChild(li);
+  });
+
+  // 이 달의 뉴스 렌더링
+  async function loadMonthlyNews() {
+    const ul = document.getElementById('monthlyNews');
+    ul.innerHTML = '<li style="padding:12px 16px; color:#888;">불러오는 중...</li>';
+    try {
+      const res = await fetch('/api/monthnews', { cache: "no-store" }); // 캐시 무시
+      if (!res.ok) throw new Error('네트워크 응답 오류');
+      const data = await res.json();
+      if (!data.length) {
+        ul.innerHTML = '<li style="padding:12px 16px; color:#888;">이번 달 뉴스가 없습니다.</li>';
+        return;
+      }
+      ul.innerHTML = '';
+      data.forEach(news => {
+        const li = document.createElement('li');
+        li.onclick = () => location.href = `post.html?id=${news._id}`;
+        li.innerHTML = `
+          <span class="title">${news.title}</span>
+          <span class="arrow">›</span>
+        `;
+        ul.appendChild(li);
+      });
+    } catch (err) {
+      console.error('이 달의 뉴스 로딩 실패:', err);
+      document.getElementById('monthlyNews').innerHTML =
+        '<li style="padding:12px 16px; color:#f00;">뉴스를 불러오는 중 오류 발생</li>';
+    }
+  }
+
+  // 강력한 초기화: 새로 들어오든, history.back이든 항상 실행
+  window.addEventListener('pageshow', loadMonthlyNews);
+</script>
