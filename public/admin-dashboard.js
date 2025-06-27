@@ -6,6 +6,10 @@ if (!token) {
 
 let selectedRequest = null;
 
+let lastViewedUser = null;
+
+let requestDetailFromAllRequests = false;
+
 fetch('/admin/me', {
   headers: { Authorization: `Bearer ${token}` },
 })
@@ -92,9 +96,14 @@ async function openUserDetail(userId) {
         li.className =
           'flex justify-between items-center p-4 hover:bg-gray-50 cursor-pointer';
         li.innerHTML = `
-          <span>${r.title}</span>
-          <span class="text-gray-400">&rarr;</span>
-        `;
+    <span>${r.title}</span>
+    <span class="text-gray-400">&rarr;</span>
+  `;
+
+        li.addEventListener('click', () => {
+          showRequestDetail(r, user); // 요청 상세보기 함수 연결
+        });
+
         listEl.appendChild(li);
       });
     }
@@ -102,19 +111,27 @@ async function openUserDetail(userId) {
     // 화면 전환
     document.getElementById('userListSection').classList.add('hidden');
     document.getElementById('userDetailSection').classList.remove('hidden');
+    document.getElementById('allRequestsSection').classList.add('hidden');
   } catch (err) {
     alert('사용자 정보를 불러오지 못했습니다.');
     console.error(err);
   }
 }
 
-function goBackToList() {
-  document.getElementById('userDetailSection').classList.add('hidden');
-  document.getElementById('userListSection').classList.remove('hidden');
-}
-
 function closeUserDetail() {
   document.getElementById('userDetailPanel').classList.add('hidden');
+}
+
+function goBackToUserDetail() {
+  if (requestDetailFromAllRequests) {
+    document.getElementById('requestDetailSection').classList.add('hidden');
+    document.getElementById('allRequestsSection').classList.remove('hidden');
+  } else if (lastViewedUser && lastViewedUser._id) {
+    document.getElementById('requestDetailSection').classList.add('hidden');
+    openUserDetail(lastViewedUser._id); // 내부에서 allRequestsSection 숨김 처리 필요
+  } else {
+    showUserList();
+  }
 }
 
 async function viewRequests(userId) {
@@ -162,12 +179,6 @@ function closeModal() {
   document.getElementById('requestModal').classList.add('hidden');
 }
 
-function openPostForm(userId, requestId, title, content) {
-  selectedRequest = { userId, requestId, title, content };
-  document.getElementById('postTitle').value = title;
-  document.getElementById('postContent').value = content;
-  document.getElementById('postModal').classList.remove('hidden');
-}
 
 function closePostModal() {
   document.getElementById('postModal').classList.add('hidden');
@@ -213,27 +224,160 @@ async function deleteRequest(userId, requestId) {
   }
 }
 
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date)) return '-';
+  return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}`;
+}
+
+function showRequestDetail(request, user) {
+  lastViewedUser = user;
+
+  requestDetailFromAllRequests =
+    document
+      .getElementById('allRequestsSection')
+      .classList.contains('hidden') === false;
+
+  document.getElementById('detailNickname').textContent = user.nickname || '-';
+  document.getElementById('detailEmail').textContent = user.email || '-';
+  document.getElementById('detailJoinDate').textContent = formatDate(
+    user.createdAt,
+  );
+  document.getElementById('detailRequestCount').textContent =
+    user.requests?.length || 0;
+
+  document.getElementById('detailTitle').textContent = request.title || '-';
+  document.getElementById('detailContent').textContent = request.content || '-';
+
+  // 화면 전환
+  ['userListSection', 'userDetailSection', 'allRequestsSection'].forEach(
+    (id) => {
+      document.getElementById(id).classList.add('hidden');
+    },
+  );
+  document.getElementById('requestDetailSection').classList.remove('hidden');
+}
+
 function showUserList() {
   document.getElementById('userListSection').classList.remove('hidden');
   document.getElementById('userDetailSection').classList.add('hidden');
   document.getElementById('allRequestsSection').classList.add('hidden');
-}
-
-function goBackToList() {
-  showUserList();
+  document.getElementById('requestDetailSection').classList.add('hidden');
+  document.getElementById('postWriteSection').classList.add('hidden');
 }
 
 function showAllRequests() {
   document.getElementById('userListSection').classList.add('hidden');
   document.getElementById('userDetailSection').classList.add('hidden');
   document.getElementById('allRequestsSection').classList.remove('hidden');
-  loadAllRequests();
+  document.getElementById('requestDetailSection').classList.add('hidden');
+  document.getElementById('postWriteSection').classList.add('hidden');
+
+  fetch('/user', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((users) => {
+      const tbody = document.getElementById('allRequestsTableBody');
+      tbody.innerHTML = '';
+
+      let index = 1;
+      users.forEach((user) => {
+        (user.requests || []).forEach((req) => {
+          const tr = document.createElement('tr');
+          tr.classList.add('hover:bg-gray-100', 'cursor-pointer');
+
+          tr.innerHTML = `
+            <td class="px-4 py-3">${index++}</td>
+            <td class="px-4 py-3">${req.title}</td>
+            <td class="px-4 py-3">${new Date(req.createdAt).toLocaleDateString()}</td>
+            <td class="px-4 py-3 text-right"></td>
+          `;
+
+          tr.addEventListener('click', () => {
+            showRequestDetail(req, user);
+          });
+
+          tbody.appendChild(tr);
+        });
+      });
+    });
 }
 
 function goBackToList() {
   document.getElementById('userListSection').classList.remove('hidden');
   document.getElementById('userDetailSection').classList.add('hidden');
   document.getElementById('allRequestsSection').classList.add('hidden');
+  document.getElementById('userDetailSection').classList.add('hidden');
+  document.getElementById('userListSection').classList.remove('hidden');
+  showUserList();
+}
+
+function showPostWriteSection(request) {
+  [
+    'userListSection',
+    'userDetailSection',
+    'allRequestsSection',
+    'requestDetailSection',
+    'postWriteSection',
+  ].forEach((id) => document.getElementById(id).classList.add('hidden'));
+
+  document.getElementById('postWriteSection').classList.remove('hidden');
+
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postRequestContent').textContent =
+    request.content || '-';
+}
+
+function openPostForm(userId, requestId, title, content) {
+  selectedRequest = { userId, requestId, title, content };
+
+  // 기존 섹션 숨김
+  [
+    'userListSection',
+    'userDetailSection',
+    'allRequestsSection',
+    'requestDetailSection',
+    'requestModal',
+  ].forEach((id) => document.getElementById(id).classList.add('hidden'));
+
+  // 게시글 내용 삽입
+  document.getElementById('postTitle').textContent = title;
+  document.getElementById('postRequestContent').textContent = content;
+
+  // 사용자 정보는 일단 초기화
+  document.getElementById('writeNickname').textContent = '-';
+  document.getElementById('writeEmail').textContent = '-';
+  document.getElementById('writeJoinDate').textContent = '-';
+  document.getElementById('writeRequestCount').textContent = '-';
+
+  // 사용자 정보 불러오기
+  fetch(`/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((user) => {
+      document.getElementById('writeNickname').textContent =
+        user.nickname || '-';
+      document.getElementById('writeEmail').textContent = user.email || '-';
+      document.getElementById('writeJoinDate').textContent = formatDate(
+        user.createdAt,
+      );
+      document.getElementById('writeRequestCount').textContent =
+        user.requests?.length || 0;
+    });
+
+  // 섹션 보이기
+  document.getElementById('postWriteSection').classList.remove('hidden');
+}
+
+function closePostModal() {
+  selectedRequest = null;
+
+  // 게시글 작성 섹션 숨기고 기본 사용자 목록으로 이동
+  document.getElementById('postWriteSection').classList.add('hidden');
+  showUserList(); // 사용자 목록으로 돌아감
 }
 
 async function loadAllRequests() {
@@ -268,6 +412,28 @@ async function loadAllRequests() {
         </div>
       `;
       container.appendChild(wrapper);
+    });
+  });
+}
+
+function renderAllRequests(users) {
+  const list = document.getElementById('allRequestsList');
+  list.innerHTML = '';
+
+  users.forEach((user) => {
+    (user.requests || []).forEach((req, idx) => {
+      const div = document.createElement('div');
+      div.className =
+        'flex justify-between items-center bg-white p-4 rounded shadow-sm cursor-pointer hover:bg-gray-100';
+      div.innerHTML = `
+        <div>
+          <p class="text-sm font-medium">${idx + 1}. ${req.title}</p>
+          <p class="text-xs text-gray-500">${new Date(req.createdAt).toLocaleDateString()}</p>
+        </div>
+        <span class="text-xl text-gray-400">→</span>
+      `;
+      div.addEventListener('click', () => showRequestDetail(user, req));
+      list.appendChild(div);
     });
   });
 }

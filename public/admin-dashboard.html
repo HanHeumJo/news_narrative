@@ -62,17 +62,17 @@
       </div>
 
       <!-- 메인 콘텐츠 -->
-      <main class="flex-1 p-8 overflow-y-auto">
+      <main class="flex-1 p-8 overflow-y-auto relative">
+        <button
+          id="logoutBtn"
+          class="absolute top-0 right-0 mt-5 mr-5 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 z-10"
+        >
+          로그아웃
+        </button>
         <!-- 사용자 목록 섹션 -->
         <section id="userListSection">
           <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">👥 사용자 목록</h1>
-            <button
-              id="logoutBtn"
-              class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              로그아웃
-            </button>
           </div>
 
           <div class="overflow-x-auto bg-white shadow-md rounded">
@@ -94,10 +94,10 @@
         <!-- 사용자 상세정보 섹션 -->
         <section id="userDetailSection" class="hidden">
           <button
-            onclick="goBackToList()"
+            onclick="showUserList()"
             class="text-black hover:text-blue-600 font-medium mb-4"
           >
-            ← 목록으로 돌아가기
+            🔙 돌아가기
           </button>
 
           <!-- 상세정보 카드 -->
@@ -146,70 +146,140 @@
 
         <!-- allRequestsSection (처음에는 hidden) -->
         <section id="allRequestsSection" class="hidden">
-          <h1 class="text-2xl font-bold mb-6">📚 전체 요청사항 관리</h1>
-          <div id="allRequestsList" class="space-y-4"></div>
+          <h1 class="text-2xl font-bold mb-6">📚 요청 사항 목록</h1>
+
+          <div class="bg-white shadow rounded-md overflow-hidden">
+            <table class="min-w-full table-auto text-sm text-left">
+              <thead class="bg-gray-50 border-b">
+                <tr>
+                  <th class="px-4 py-3 w-12">No.</th>
+                  <th class="px-4 py-3">제목</th>
+                  <th class="px-4 py-3 w-32">작성 일자</th>
+                  <th class="px-4 py-3 w-8"></th>
+                  <!-- 오른쪽 화살표용 -->
+                </tr>
+              </thead>
+              <tbody id="allRequestsTableBody" class="divide-y">
+                <!-- JS로 동적으로 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 요청 상세보기 섹션 (초기에 hidden) -->
+        <section id="requestDetailSection" class="hidden">
+          <button
+            onclick="goBackToUserDetail()"
+            class="text-black hover:text-blue-600 font-medium mb-4"
+          >
+            🔙 돌아가기
+          </button>
+
+          <div class="bg-white p-6 rounded shadow space-y-6 max-w-3xl">
+            <!-- 사용자 정보 -->
+            <div class="grid grid-cols-2 gap-y-1 text-sm text-gray-800">
+              <div>
+                <strong>닉네임:</strong> <span id="detailNickname">-</span>
+              </div>
+              <div>
+                <strong>가입일자:</strong> <span id="detailJoinDate">-</span>
+              </div>
+              <div>
+                <strong>이메일:</strong> <span id="detailEmail">-</span>
+              </div>
+              <div>
+                <strong>요청 횟수:</strong>
+                <span id="detailRequestCount">-</span>
+              </div>
+            </div>
+
+            <!-- 요청 내용 -->
+            <div>
+              <h3 class="font-semibold text-lg">요청 사항 내용</h3>
+              <p class="mt-2">
+                <strong>제목:</strong>
+                <span id="detailTitle" class="font-medium"></span>
+              </p>
+              <div class="mt-4 p-4 border rounded text-gray-700">
+                <p id="detailContent" class="text-sm whitespace-pre-wrap">-</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 요청 게시글 모달 -->
+        <div
+          id="requestModal"
+          class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
+        >
+          <div
+            class="bg-white rounded-lg shadow-lg p-6 w-1/2 max-h-[80%] overflow-y-auto"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">요청 게시글</h2>
+              <button
+                onclick="closeModal()"
+                class="text-gray-500 hover:text-black text-lg"
+              >
+                &times;
+              </button>
+            </div>
+            <ul id="requestList" class="space-y-3"></ul>
+          </div>
+        </div>
+
+        <section id="postWriteSection" class="hidden">
+          <button
+            onclick="showAllRequests()"
+            class="text-black hover:text-blue-600 font-medium mb-4"
+          >
+            🔙 돌아가기
+          </button>
+          <div
+            class="bg-white p-6 rounded shadow space-y-6 max-w-3xl"
+          >
+            <!-- 요청 작성 카드 -->
+            <div class="grid grid-cols-2 gap-y-1 text-sm text-gray-800">
+              <div>
+                <strong>닉네임:</strong> <span id="writeNickname">-</span>
+              </div>
+              <div>
+                <strong>가입일자:</strong> <span id="writeJoinDate">-</span>
+              </div>
+              <div><strong>이메일:</strong> <span id="writeEmail">-</span></div>
+              <div>
+                <strong>요청 횟수:</strong>
+                <span id="writeRequestCount">-</span>
+              </div>
+            </div>
+
+            <!-- 요청 사항 내용 -->
+            <div>
+              <h3 class="font-semibold text-lg">요청 사항 내용</h3>
+              <p class="mt-2">
+                <strong>제목:</strong>
+                <span id="postTitle" class="font-medium"></span>
+              </p>
+              <div class="mt-4 p-4 border rounded text-gray-700">
+                <p id="postRequestContent" class="text-sm whitespace-pre-wrap">
+                  -
+                </p>
+              </div>
+            </div>
+
+            <!-- 작성 버튼 -->
+            <div class="flex justify-end">
+              <button
+                onclick="submitPost()"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                작성 완료
+              </button>
+            </div>
+          </div>
         </section>
       </main>
     </div>
-
-    <!-- 요청 게시글 모달 -->
-    <div
-      id="requestModal"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
-    >
-      <div
-        class="bg-white rounded-lg shadow-lg p-6 w-1/2 max-h-[80%] overflow-y-auto"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">요청 게시글</h2>
-          <button
-            onclick="closeModal()"
-            class="text-gray-500 hover:text-black text-lg"
-          >
-            &times;
-          </button>
-        </div>
-        <ul id="requestList" class="space-y-3"></ul>
-      </div>
-    </div>
-
-    <!-- 게시글 작성 모달 -->
-    <div
-      id="postModal"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
-    >
-      <div class="bg-white p-6 rounded-lg w-1/2 shadow">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">요청 수락 후 게시글 작성</h2>
-          <button
-            onclick="closePostModal()"
-            class="text-gray-500 hover:text-black text-lg"
-          >
-            &times;
-          </button>
-        </div>
-        <input
-          id="postTitle"
-          placeholder="게시글 제목"
-          class="w-full p-2 border mb-2 rounded"
-        />
-        <textarea
-          id="postContent"
-          rows="5"
-          placeholder="게시글 내용"
-          class="w-full p-2 border rounded mb-4"
-        ></textarea>
-        <div class="flex justify-end">
-          <button
-            onclick="submitPost()"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            작성 완료
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- JS -->
     <script src="admin-dashboard.js"></script>
   </body>
