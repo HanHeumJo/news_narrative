@@ -42,11 +42,11 @@ export class NewsController {
   }
 
   /**
-   * GET /api/contant/:category
+   * GET /api/search-by-category
    * 특정 카테고리별 게시물 조회
    */
-  @Get('content/:category')
-  category(@Param('category') category: string) {
+  @Get('search-by-category')
+    searchByCategory(@Query('category') category: string) {
     return this.newsService.findByCategory(category);
   }
 

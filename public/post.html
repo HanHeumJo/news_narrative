@@ -78,24 +78,25 @@
 </body>
 </html>
 
+<!-- (생략) HTML <head>, <style>, <body> 구조는 기존과 동일하며, focus는 <script> 내부 -->
 <script>
   const token = localStorage.getItem('token');
 
   // 로고 클릭 시
   document.getElementById('logo').addEventListener('click', () => {
-      window.location.href = 'main.html';
+    window.location.href = 'main.html';
   });
 
   // 돋보기(검색) 클릭 시
   document.getElementById('searchBtn').addEventListener('click', () => {
     if (token) {
-      window.location.href = 'main.html';
+      window.location.href = 'search.html';
     } else {
       window.location.href = 'member/login.html';
     }
   });
-  
-    // 검색창 Enter 처리
+
+  // 검색창 Enter 처리
   const homeSearch = document.getElementById('homeSearch');
   homeSearch.addEventListener('keypress', e => {
     if (e.key === 'Enter') {
@@ -106,7 +107,7 @@
     }
   });
 
-  // 네비게이션 동적 생성
+  // ✅ 카테고리 목록 생성 + 클릭 시 category 검색 페이지로 이동
   const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
   const navList = document.getElementById('navList');
   tags.forEach(tag => {
@@ -115,94 +116,98 @@
     if (tag === '요청하기') {
       li.onclick = () => location.href = 'request.html';
     } else {
-      li.onclick = () => location.href = `timeline.html?topic=${encodeURIComponent(tag)}`;
+      const encoded = encodeURIComponent(tag);
+      li.onclick = () => location.href = `search.html?category=${encoded}&page=1`;
     }
     navList.appendChild(li);
   });
 
-// DB에서 뉴스 상세 불러와서 보여주기
-const params = new URLSearchParams(location.search);
-const postId = params.get('id');
-async function loadPost() {
-  if (!postId) return;
-  const res = await fetch(`/api/contant?id=${postId}`);
-  if (!res.ok) {
-    document.getElementById('postTitle').textContent = '불러오기 실패';
-    document.getElementById('postContent').textContent = '';
-    return;
-  }
-  const news = await res.json();
-  document.getElementById('postTitle').textContent = news.title || '제목 없음';
-  document.getElementById('postContent').innerHTML = `
-    <p style="color:#888;font-size:0.9em;">
-      <b>요약:</b> ${news.summary || '-'}<br>
-      <b>날짜:</b> ${news.date ? new Date(news.date).toLocaleDateString() : '-'}<br>
-      <b>언론사:</b> ${news.press || '-'} / <b>기자:</b> ${news.reporter || '-'}
-    </p>
-    <div style="margin:1em 0;">${news.content || ''}</div>
-    <p><b>카테고리:</b> ${(news.category || []).join(', ')}</p>
-    <p><b>키워드:</b> ${(news.keywords || []).join(', ')}</p>
-    ${news.thumbnail ? `<img src="${news.thumbnail}" alt="썸네일" style="max-width:200px;border-radius:8px;">` : ''}
-    ${news.url ? `<p><a href="${news.url}" target="_blank">관련 기사 바로가기</a></p>` : ''}`;
+  // DB에서 뉴스 상세 불러오기
+  const params = new URLSearchParams(location.search);
+  const postId = params.get('id');
+
+  async function loadPost() {
+    if (!postId) return;
+    const res = await fetch(`/api/content?id=${postId}`);
+    if (!res.ok) {
+      document.getElementById('postTitle').textContent = '불러오기 실패';
+      document.getElementById('postContent').textContent = '';
+      return;
+    }
+    const news = await res.json();
+    document.getElementById('postTitle').textContent = news.title || '제목 없음';
+    document.getElementById('postContent').innerHTML = `
+      <p style="color:#888;font-size:0.9em;">
+        <b>요약:</b> ${news.summary || '-'}<br>
+        <b>날짜:</b> ${news.date ? new Date(news.date).toLocaleDateString() : '-'}<br>
+        <b>언론사:</b> ${news.press || '-'} / <b>기자:</b> ${news.reporter || '-'}
+      </p>
+      <div style="margin:1em 0;">${news.content || ''}</div>
+      <p><b>카테고리:</b> ${(news.category || []).join(', ')}</p>
+      <p><b>키워드:</b> ${(news.keywords || []).join(', ')}</p>
+      ${news.thumbnail ? `<img src="${news.thumbnail}" alt="썸네일" style="max-width:200px;border-radius:8px;">` : ''}
+      ${news.url ? `<p><a href="${news.url}" target="_blank">관련 기사 바로가기</a></p>` : ''}
+    `;
     loadComments(postId);
   }
+
   window.addEventListener('DOMContentLoaded', loadPost);
 
-async function loadComments(postId) {
-  const commentList = document.getElementById('commentList');
-  try {
-    const res = await fetch(`/api/comment?newsId=${postId}`);
-    if (!res.ok) {
-      commentList.innerHTML = '댓글을 불러오지 못했습니다.';
+  // 댓글 불러오기
+  async function loadComments(postId) {
+    const commentList = document.getElementById('commentList');
+    try {
+      const res = await fetch(`/api/comments?newsId=${postId}`);
+      if (!res.ok) {
+        commentList.innerHTML = '댓글을 불러오지 못했습니다.';
+        return;
+      }
+      const comments = await res.json();
+      if (comments.length === 0) {
+        commentList.innerHTML = '<p>첫 댓글을 남겨보세요!</p>';
+        return;
+      }
+      commentList.innerHTML = '';
+      comments.forEach(c => {
+        const div = document.createElement('div');
+        div.style = 'border-top:1px solid #eee; padding:8px 0;';
+        div.innerHTML = `
+          <p style="margin:0;"><b>${c.nickname || '익명'}:</b> ${c.content}</p>
+          <p style="margin:4px 0 0; color:#888; font-size:0.8em;">${new Date(c.createdAt).toLocaleString()}</p>
+        `;
+        commentList.appendChild(div);
+      });
+    } catch (e) {
+      commentList.innerHTML = '댓글을 불러오는 중 오류 발생';
+    }
+  }
+
+  // 댓글 작성
+  document.getElementById('submitComment').addEventListener('click', async () => {
+    const content = document.getElementById('commentInput').value.trim();
+    if (!content) {
+      alert('댓글을 입력하세요.');
       return;
     }
-    const comments = await res.json();
-    if (comments.length === 0) {
-      commentList.innerHTML = '<p>첫 댓글을 남겨보세요!</p>';
-      return;
-    }
-    commentList.innerHTML = '';
-    comments.forEach(c => {
-      const div = document.createElement('div');
-      div.style = 'border-top:1px solid #eee; padding:8px 0;';
-      div.innerHTML = `
-        <p style="margin:0;"><b>${c.nickname || '익명'}:</b> ${c.content}</p>
-        <p style="margin:4px 0 0; color:#888; font-size:0.8em;">${new Date(c.createdAt).toLocaleString()}</p>
-      `;
-      commentList.appendChild(div);
+
+    const nickname = prompt('닉네임을 입력해주세요:', '익명');
+    if (nickname === null) return;
+
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        newsId: postId,
+        nickname,
+        content
+      })
     });
-  } catch (e) {
-    commentList.innerHTML = '댓글을 불러오는 중 오류 발생';
-  }
-}
 
-document.getElementById('submitComment').addEventListener('click', async () => {
-  const content = document.getElementById('commentInput').value.trim();
-  if (!content) {
-    alert('댓글을 입력하세요.');
-    return;
-  }
-
-  const nickname = prompt('닉네임을 입력해주세요:', '익명'); // 임시 방식
-  if (nickname === null) return;
-
-  const res = await fetch('/api/comment', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      newsId: postId,
-      nickname,
-      content
-    })
+    if (res.ok) {
+      document.getElementById('commentInput').value = '';
+      loadComments(postId);
+    } else {
+      alert('댓글 등록 실패');
+    }
   });
-
-  if (res.ok) {
-    document.getElementById('commentInput').value = '';
-    loadComments(postId); // 다시 로딩
-  } else {
-    alert('댓글 등록 실패');
-  }
-});
-
 </script>
-

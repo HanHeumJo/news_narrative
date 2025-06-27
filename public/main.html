@@ -159,28 +159,7 @@
   <div class="container">
     <h2>이 달의 뉴스</h2>
     <div class="news-card">
-      <ul>
-        <li>
-          <span class="title">Understanding Async/Await in JavaScript</span>
-          <span class="arrow">›</span>
-        </li>
-        <li>
-          <span class="title">CSS Grid vs Flexbox: When to Use Which</span>
-          <span class="arrow">›</span>
-        </li>
-        <li>
-          <span class="title">Getting Started with TypeScript</span>
-          <span class="arrow">›</span>
-        </li>
-        <li>
-          <span class="title">The Power of CSS Variables</span>
-          <span class="arrow">›</span>
-        </li>
-        <li>
-          <span class="title">Optimizing Web Performance</span>
-          <span class="arrow">›</span>
-        </li>
-      </ul>
+      <ul id="monthlyNews"></ul>
     </div>
   </div>
 
@@ -191,43 +170,65 @@
 <script>
   const token = localStorage.getItem('token');
 
-  // 로고 클릭 시
-  document.getElementById('logo').addEventListener('click', () => {
-      window.location.href = 'main.html';
-  });
+  // 로고 클릭
+  document.getElementById('logo').onclick = () => location.href = 'main.html';
 
-  // 돋보기(검색) 클릭 시
-  document.getElementById('searchBtn').addEventListener('click', () => {
-    if (token) {
-      window.location.href = 'search.html';
-    } else {
-      window.location.href = 'member/login.html';
-    }
-  });
-  
-    // 검색창 Enter 처리
-  const homeSearch = document.getElementById('homeSearch');
-  homeSearch.addEventListener('keypress', e => {
+  // 검색 버튼
+  document.getElementById('searchBtn').onclick = () => {
+    if (token) location.href = 'search.html';
+    else location.href = 'member/login.html';
+  };
+
+  // 엔터 검색
+  document.getElementById('homeSearch').addEventListener('keypress', e => {
     if (e.key === 'Enter') {
-      const q = encodeURIComponent(homeSearch.value.trim());
-      if (q) {
-        window.location.href = `search.html?keyword=${q}&page=1`;
-      }
+      const q = homeSearch.value.trim();
+      if (q) location.href = `search.html?keyword=${encodeURIComponent(q)}&page=1`;
     }
   });
 
-    // 원하는 키워드(카테고리/태그) 배열
+  // 카테고리 메뉴
   const tags = ['정치', '시사', '경제', '스포츠', '사회', '요청하기'];
-
   const navList = document.getElementById('navList');
   tags.forEach(tag => {
     const li = document.createElement('li');
     li.textContent = tag;
-    if (tag === '요청하기') {
-      li.onclick = () => location.href = 'request.html';
-    } else {
-      li.onclick = () => location.href = `timeline.html?topic=${encodeURIComponent(tag)}`;
-    }
+    li.onclick = () => {
+      if (tag === '요청하기') location.href = 'request.html';
+      else location.href = `search.html?category=${encodeURIComponent(tag)}&page=1`;
+    };
     navList.appendChild(li);
   });
+
+  // 이 달의 뉴스 렌더링
+  async function loadMonthlyNews() {
+    const ul = document.getElementById('monthlyNews');
+    ul.innerHTML = '<li style="padding:12px 16px; color:#888;">불러오는 중...</li>';
+    try {
+      const res = await fetch('/api/monthnews', { cache: "no-store" }); // 캐시 무시
+      if (!res.ok) throw new Error('네트워크 응답 오류');
+      const data = await res.json();
+      if (!data.length) {
+        ul.innerHTML = '<li style="padding:12px 16px; color:#888;">이번 달 뉴스가 없습니다.</li>';
+        return;
+      }
+      ul.innerHTML = '';
+      data.forEach(news => {
+        const li = document.createElement('li');
+        li.onclick = () => location.href = `post.html?id=${news._id}`;
+        li.innerHTML = `
+          <span class="title">${news.title}</span>
+          <span class="arrow">›</span>
+        `;
+        ul.appendChild(li);
+      });
+    } catch (err) {
+      console.error('이 달의 뉴스 로딩 실패:', err);
+      document.getElementById('monthlyNews').innerHTML =
+        '<li style="padding:12px 16px; color:#f00;">뉴스를 불러오는 중 오류 발생</li>';
+    }
+  }
+
+  // 강력한 초기화: 새로 들어오든, history.back이든 항상 실행
+  window.addEventListener('pageshow', loadMonthlyNews);
 </script>

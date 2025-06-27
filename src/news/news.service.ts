@@ -22,25 +22,21 @@ export class NewsService {
 
   /** 카테고리(태그)로 게시물 조회 */
   async findByCategory(category: string) {
-    const data = await this.newsModel.find({ tags: category }).lean();
-    return data.map(item => ({
-      ...item,
-      id: item._id,
-    }));
+    return this.newsModel.find({
+      category: { $in: [category] }
+    }).sort({ date: -1 }).exec();
   }
 
   /** 이달 조회수 기준 상위 5개 게시물 */
   async findMonthlyTop5() {
-    const data = await this.newsModel
-      .find()
-      .sort({ viewCount: -1 })
-      .limit(5)
-      .lean();
-    return data.map(item => ({
-      ...item,
-      id: item._id,
-    }));
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    return this.newsModel.find({
+      date: { $gte: startOfMonth }
+    }).sort({ likes: -1, date: -1 }).limit(5).exec();
   }
+
 
   /** 전체 뉴스 리스트 */
   async newsList() {
@@ -50,6 +46,7 @@ export class NewsService {
       id: item._id,
     }));
   }
+  
 
   /** 단일 게시물 조회 */
   async viewContent(id: string) {
